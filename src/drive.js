@@ -117,6 +117,14 @@ export async function listTree(rootId, onProgress = () => {}) {
   return { name: meta.name, files };
 }
 
-export async function fetchFile(id) {
-  return (await authed(`${API}/${id}?alt=media&supportsAllDrives=true`)).arrayBuffer();
+export async function readAll(r, total, onProgress) {
+  if (!onProgress || !r.body) return r.arrayBuffer();
+  const rd = r.body.getReader(), parts = []; let got = 0;
+  for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; onProgress(got, total); }
+  const out = new Uint8Array(got); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+  return out.buffer;
+}
+
+export async function fetchFile(id, onProgress, total) {
+  return readAll(await authed(`${API}/${id}?alt=media&supportsAllDrives=true`), total, onProgress);
 }

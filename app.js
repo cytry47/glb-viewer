@@ -27,7 +27,7 @@ const saveHidden = () => store.lsSet(hiddenKey(), JSON.stringify([...hidden]));
 const source = MOCK ? {
   ready: () => true,
   list: async () => ({ name: 'Mock library', files: await (await fetch('mock/files.json')).json() }),
-  bytes: async id => (await fetch(`mock/glb/${id}.glb`)).arrayBuffer(),
+  bytes: async (id, onProgress, total) => drive.readAll(await fetch(`mock/glb/${id}.glb`), total, onProgress),
 } : {
   ready: drive.signedIn,
   list: id => drive.listTree(id, (n, left) => status(`Listing... ${n} GLBs found, ${left} folders to go`)),
@@ -307,7 +307,7 @@ async function queueThumb(c) {
 }
 function putImg(th, blob) { const img = new Image(); img.src = URL.createObjectURL(blob); img.alt = ''; th.prepend(img); }
 function pumpThumbs() {
-  while (tActive < 2 && tq.length) {
+  while (tActive < 2 && tq.length && $('viewer').hidden) { // viewer open = it gets all the bandwidth
     const c = tq.shift();
     if (!c.isConnected) continue;
     tActive++;
@@ -324,6 +324,13 @@ function pumpThumbs() {
 
 // ---------- viewer ----------
 let viewer = null, vIdx = -1, vBuf = null, vSeq = 0;
+// last opened files kept in memory (up to ~300 MB) so prev/next back is instant
+const recent = new Map(); let recentBytes = 0;
+function remember(id, buf) {
+  if (recent.has(id)) return;
+  recent.set(id, buf); recentBytes += buf.byteLength;
+  for (const [k, v] of recent) { if (recentBytes <= 300 * 1048576 || recent.size <= 1) break; recent.delete(k); recentBytes -= v.byteLength; }
+}
 function vStarUI() { const on = favs.has(shown[vIdx]?.id); $('vStar').textContent = on ? '★ Favourite' : '☆ Favourite'; $('vStar').classList.toggle('on', on); }
 async function openViewer(i) {
   const f = shown[i]; if (!f) return;
@@ -337,8 +344,12 @@ async function openViewer(i) {
   $('vStats').textContent = ''; $('vAnimWrap').hidden = true; $('vLoading').hidden = false; $('vLoading').textContent = 'Loading ' + fmtSize(f.size) + '...';
   viewer.clear();
   try {
-    const buf = await source.bytes(f.id);
+    const buf = recent.get(f.id) || await source.bytes(f.id, (got, total) => {
+      if (seq === vSeq) $('vLoading').textContent = `Loading ${fmtSize(got)} / ${fmtSize(total || f.size)}`;
+    }, f.size);
+    remember(f.id, buf);
     if (seq !== vSeq) return;
+    $('vLoading').textContent = 'Building...';
     vBuf = buf; await showBuf(false);
     $('vLoading').hidden = true;
   } catch (e) { if (seq === vSeq) $('vLoading').textContent = 'Could not load: ' + (e.message || e); if (e instanceof drive.NeedSignIn) fail(e); }
@@ -361,7 +372,7 @@ async function showBuf(keepCam) {
     a.value = 0; viewer.play(0);
   }
 }
-function closeViewer() { $('viewer').hidden = true; vSeq++; if (viewer) viewer.clear(); vBuf = null; history.replaceState(null, '', location.pathname + location.search); }
+function closeViewer() { $('viewer').hidden = true; vSeq++; if (viewer) viewer.clear(); vBuf = null; pumpThumbs(); history.replaceState(null, '', location.pathname + location.search); }
 $('vClose').onclick = closeViewer;
 $('viewer').onclick = e => { if (e.target === $('viewer')) closeViewer(); };
 $('vPrev').onclick = () => openViewer((vIdx - 1 + shown.length) % shown.length);

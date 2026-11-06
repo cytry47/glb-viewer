@@ -158,6 +158,7 @@ export class Viewer {
   clear() {
     this.running = false;
     if (this.obj) { this.scene.remove(this.obj); dispose(this.obj); }
+    this.renderer.clear(); // drop the old picture right away
     this.obj = null; this.gltf = null; this.mixer = null;
   }
 }
