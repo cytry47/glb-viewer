@@ -21,7 +21,11 @@
     <button type="submit">Open</button>
   </form>
   <input id="search" type="search" placeholder="Search name or folder" autocomplete="off">
+  <select id="sort" title="Sort">
+    <option value="name">By folder</option><option value="new">Newest</option><option value="big">Biggest</option><option value="small">Smallest</option>
+  </select>
   <label class="chk"><input id="hideWip" type="checkbox"> hide _WIP</label>
+  <label class="chk" title="Card size"><input id="zoom" type="range" min="110" max="320" value="150"></label>
   <button id="refresh" title="List the folder again (new uploads)">Refresh</button>
   <span id="count" class="muted"></span>
   <span class="grow"></span>
@@ -30,6 +34,13 @@
   <button id="signout" hidden>Sign out</button>
 </header>
 <div id="status" class="status" hidden></div>
+<div id="selbar" class="selbar" hidden>
+  <span id="selCount"></span>
+  <button id="selDownload" class="primary">Download</button>
+  <button id="selAll">Select all shown</button>
+  <button id="selClear">Clear</button>
+  <span class="muted">Ctrl-click = pick, Shift-click = range</span>
+</div>
 <main class="main">
   <nav id="tree" class="tree"></nav>
   <section id="grid" class="grid"></section>
@@ -51,8 +62,14 @@
           <select id="vLook"><option value="pupkins">Pupkins toon</option><option value="plain">Plain</option></select>
         </label>
         <label id="vAnimWrap" hidden>Animation <select id="vAnim"></select></label>
+        <label>Background
+          <select id="vBg"><option value="light">Light</option><option value="dark">Dark</option><option value="grey">Grey</option><option value="none">Transparent (PNG)</option></select>
+        </label>
+        <div class="row"><label class="chk"><input id="vGrid" type="checkbox"> grid</label><label class="chk"><input id="vWire" type="checkbox"> wireframe</label></div>
         <table id="vStats" class="stats"></table>
         <button id="vDownload" class="primary">Download</button>
+        <div class="row"><button id="vStar">&#9734; Favourite</button><button id="vLink">Copy link</button></div>
+        <button id="vPng">Save PNG</button>
         <a id="vDrive" target="_blank" rel="noopener">Open in Drive</a>
       </aside>
     </div>

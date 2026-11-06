@@ -63,7 +63,7 @@ function thumbRig() {
   return tr = { renderer, scene, cam };
 }
 
-// buf -> webp Blob
+// buf -> { blob (webp), tris, anims }
 export async function thumbnail(buf) {
   const g = await parse(buf);
   const { renderer, scene, cam } = thumbRig();
@@ -73,8 +73,9 @@ export async function thumbnail(buf) {
   frame(cam, obj);
   renderer.render(scene, cam);
   const blob = await new Promise(res => renderer.domElement.toBlob(res, 'image/webp', 0.85));
+  const st = stats(obj);
   scene.remove(obj); dispose(obj);
-  return blob;
+  return { blob, tris: st.tris, anims: g.animations.length };
 }
 
 // ---------- viewer ----------
@@ -89,6 +90,7 @@ export class Viewer {
     this.controls.enableDamping = true;
     this.clock = new THREE.Clock();
     this.mixer = null; this.gltf = null; this.obj = null; this.running = false;
+    this.opts = { grid: false, wire: false };
     new ResizeObserver(() => this.resize()).observe(wrap);
   }
   resize() {
@@ -102,8 +104,30 @@ export class Viewer {
     this.gltf = gltf;
     this.build(look);
     if (!keepCam) frame(this.cam, this.obj, this.controls);
+    const box = new THREE.Box3().setFromObject(this.obj), dim = box.getSize(new THREE.Vector3());
+    this.box = box; this.applyOpts();
     this.start();
-    return { ...stats(this.obj), animations: gltf.animations.map(a => a.name || 'clip') };
+    return { ...stats(this.obj), animations: gltf.animations.map(a => a.name || 'clip'), dims: [dim.x, dim.y, dim.z] };
+  }
+  // ground grid (1 cell = 1 m, or a power of 10 for tiny / huge models) + wireframe
+  set(opt, on) { this.opts[opt] = on; this.applyOpts(); }
+  applyOpts() {
+    if (!this.obj) return;
+    if (this.grid) { this.scene.remove(this.grid); this.grid.geometry.dispose(); this.grid = null; }
+    if (this.opts.grid && this.box && !this.box.isEmpty()) {
+      const d = this.box.getSize(new THREE.Vector3()), m = Math.max(d.x, d.z, d.y, 1e-3);
+      const cell = Math.pow(10, Math.floor(Math.log10(m)));
+      const n = Math.max(4, Math.ceil(m * 1.6 / cell)) * 2;
+      this.grid = new THREE.GridHelper(n * cell, n, 0x7a6a5c, 0xb9ab9c);
+      const c = this.box.getCenter(new THREE.Vector3());
+      this.grid.position.set(c.x, this.box.min.y, c.z); this.scene.add(this.grid);
+      this.gridCell = cell;
+    }
+    this.obj.traverse(n => { if (n.isMesh && !n.userData.isInk) (Array.isArray(n.material) ? n.material : [n.material]).forEach(m => { m.wireframe = this.opts.wire; }); });
+  }
+  png() {
+    this.renderer.render(this.scene, this.cam);
+    return new Promise(res => this.renderer.domElement.toBlob(res, 'image/png'));
   }
   build(look) {
     const scene = this.scene = new THREE.Scene();

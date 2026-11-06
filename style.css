@@ -34,13 +34,15 @@ input[type=search], .folder input { background: var(--card); border: 1px solid v
 .tree div.on .n { color: #3a1e28; }
 .grid { flex: 1; overflow: auto; padding: 4px 16px 40px; }
 .grp h3 { position: sticky; top: 0; margin: 0; padding: 12px 0 8px; background: var(--bg); font-size: 13px; color: var(--muted); font-weight: 600; z-index: 1; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--cardw, 150px), 1fr)); gap: 12px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; cursor: pointer; content-visibility: auto; contain-intrinsic-size: 150px 200px; }
 .card:hover { border-color: var(--accent); }
 .card .th { aspect-ratio: 1; background: var(--thumb); display: grid; place-items: center; position: relative; color: var(--muted); font-size: 12px; }
 .card .th img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .card .th button { font-size: 12px; padding: 3px 8px; }
-.card .wip { position: absolute; top: 6px; left: 6px; background: var(--wip); color: #3a2a00; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+.card .badges { position: absolute; top: 6px; left: 6px; display: flex; gap: 4px; z-index: 1; }
+.card .new { background: var(--accent2); color: #0f3325; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+.card .wip { background: var(--wip); color: #3a2a00; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
 .card .meta { padding: 6px 8px 8px; }
 .card .nm { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card .sz { font-size: 11px; color: var(--muted); }
@@ -68,3 +70,24 @@ input[type=search], .folder input { background: var(--card); border: 1px solid v
   .vbody { flex-direction: column; }
   .vside { width: auto; border-left: 0; border-top: 1px solid var(--line); }
 }
+.selbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.card .pick { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; accent-color: var(--accent); opacity: 0; cursor: pointer; z-index: 1; }
+.card:hover .pick, .card.sel .pick, .grid.picking .pick { opacity: 1; }
+.card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.card:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; }
+.card .star { position: absolute; bottom: 6px; right: 6px; border: 0; background: none; padding: 0 4px; font-size: 18px; color: var(--muted); opacity: 0; z-index: 1; }
+.card:hover .star, .card .star.on { opacity: 1; }
+.card .star.on, #vStar.on { color: #f2b84b; }
+.card .pth { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree div { display: flex; align-items: center; }
+.tree .lbl { overflow: hidden; text-overflow: ellipsis; }
+.tree .hide { margin-left: auto; font-size: 11px; padding: 0 6px; border-radius: 6px; opacity: 0; }
+.tree div:hover .hide, .tree div.off .hide { opacity: 1; }
+.tree div.off .lbl { text-decoration: line-through; opacity: .5; }
+.vside .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.vside .row button { flex: 1; }
+.vside .chk { flex-direction: row; font-size: 13px; }
+.vcanvas[data-bg=dark] { background: #24212a; }
+.vcanvas[data-bg=grey] { background: #8f8f8f; }
+.vcanvas[data-bg=none] { background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0 / 20px 20px; }
+#zoom { width: 90px; }
