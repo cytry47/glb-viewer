@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLB Library</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script src="toon_look.js"></script>
+</head>
+<body>
+<header class="bar">
+  <strong class="brand">GLB Library</strong>
+  <form id="folderForm" class="folder">
+    <input id="folderInput" placeholder="Paste a Google Drive folder link" autocomplete="off" spellcheck="false">
+    <button type="submit">Open</button>
+  </form>
+  <input id="search" type="search" placeholder="Search name or folder" autocomplete="off">
+  <label class="chk"><input id="hideWip" type="checkbox"> hide _WIP</label>
+  <button id="refresh" title="List the folder again (new uploads)">Refresh</button>
+  <span id="count" class="muted"></span>
+  <span class="grow"></span>
+  <span id="who" class="muted"></span>
+  <button id="signin">Sign in with Google</button>
+  <button id="signout" hidden>Sign out</button>
+</header>
+<div id="status" class="status" hidden></div>
+<main class="main">
+  <nav id="tree" class="tree"></nav>
+  <section id="grid" class="grid"></section>
+</main>
+
+<div id="viewer" class="viewer" hidden>
+  <div class="vpanel">
+    <div class="vhead">
+      <div><div id="vName" class="vname"></div><div id="vPath" class="muted"></div></div>
+      <span class="grow"></span>
+      <button id="vPrev" title="Previous (Left)">&#8592;</button>
+      <button id="vNext" title="Next (Right)">&#8594;</button>
+      <button id="vClose" title="Close (Esc)">Close</button>
+    </div>
+    <div class="vbody">
+      <div id="vCanvasWrap" class="vcanvas"><div id="vLoading" class="vloading">Loading...</div></div>
+      <aside class="vside">
+        <label>Look
+          <select id="vLook"><option value="pupkins">Pupkins toon</option><option value="plain">Plain</option></select>
+        </label>
+        <label id="vAnimWrap" hidden>Animation <select id="vAnim"></select></label>
+        <table id="vStats" class="stats"></table>
+        <button id="vDownload" class="primary">Download</button>
+        <a id="vDrive" target="_blank" rel="noopener">Open in Drive</a>
+      </aside>
+    </div>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

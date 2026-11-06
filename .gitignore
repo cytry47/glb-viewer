@@ -1,0 +1,4 @@
+mock/
+__pycache__/
+# screenshots show third-party assets; keep local
+docs/proof/
